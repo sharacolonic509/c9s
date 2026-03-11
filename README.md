@@ -12,9 +12,13 @@ Terminal dashboard for Claude Code -- like k9s, but for your AI sessions.
 
 ## Why c9s?
 
-I tried [agent-deck](https://github.com/asheshgoplani/agent-deck), [ntm](https://github.com/Dicklesworthstone/ntm), and other tools for managing Claude Code sessions. They're powerful, but way more complex than what my workflow needed. I wanted something like [k9s](https://k9scli.io/) -- simple, keyboard-driven, zero setup. Launch one command, see all your sessions, open or resume any of them. That's it.
+If you use Claude Code daily, you know the problem: dozens of sessions scattered across projects, no easy way to see what's running, what's waiting for input, or what you left off yesterday. Context switching between sessions means hunting through terminals, remembering session IDs, and losing track of what's where.
 
-c9s reads directly from `~/.claude/`. No API calls, no network, no daemon. One binary + tmux.
+I tried [agent-deck](https://github.com/asheshgoplani/agent-deck), [ntm](https://github.com/Dicklesworthstone/ntm), and other tools for managing Claude Code sessions. They're powerful, but way more complex than what my workflow needed. I wanted something like [k9s](https://k9scli.io/) -- simple, keyboard-driven, zero setup. Launch one command, see all your sessions, jump between them instantly. That's it.
+
+c9s gives you a single dashboard for every session on your machine. See at a glance which ones are actively processing, which need your attention, and which are ready to resume. Switch between sessions in a keystroke. No more lost context, no more forgotten sessions.
+
+It reads directly from `~/.claude/`. No API calls, no network, no daemon. One binary + tmux.
 
 ## Features
 
