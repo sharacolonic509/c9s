@@ -1047,7 +1047,14 @@ func (m model) View() string {
 	// Footer
 	b.WriteString(m.footer())
 
-	return b.String()
+	// Pad to full terminal height to prevent old content showing through.
+	out := b.String()
+	lines := strings.Count(out, "\n")
+	for lines < m.height-1 {
+		out += "\n"
+		lines++
+	}
+	return out
 }
 
 // renderPreview renders the session preview panel.
