@@ -8,7 +8,7 @@ Terminal dashboard for Claude Code -- like k9s, but for your AI sessions.
 
 ![c9s dashboard](docs/dashboard.png)
 
-> **Beta** -- c9s is in early development and still needs validation. Feel free to use it! It reads local files only -- it never accesses your Claude account, never stores credentials, and adds zero cost to your Claude usage.
+> **Beta** -- c9s is in early development and still needs validation. Feel free to use it! It reads local files only -- it never accesses your Claude account, never stores credentials, and adds zero cost to your Claude usage. Feedback and contributions are welcome!
 
 ## Why c9s?
 
