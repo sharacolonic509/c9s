@@ -397,6 +397,11 @@ func (m model) openSession(items []displayItem) (tea.Model, tea.Cmd) {
 	var claudeCmd string
 	workDir := s.ProjectPath
 
+	// Validate session ID before using in shell commands.
+	if !claude.IsValidSessionID(s.SessionID) {
+		return m, statusCmd("invalid session ID", true)
+	}
+
 	switch s.Status {
 	case claude.StatusActive, claude.StatusIdle:
 		// Resume into the running session (claude handles concurrent access).

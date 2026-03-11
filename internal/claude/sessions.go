@@ -8,11 +8,20 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 )
+
+// validSessionID matches UUID-like session IDs (hex + dashes only).
+var validSessionID = regexp.MustCompile(`^[a-fA-F0-9-]+$`)
+
+// IsValidSessionID returns true if the session ID is safe to use in commands.
+func IsValidSessionID(id string) bool {
+	return len(id) > 0 && len(id) <= 128 && validSessionID.MatchString(id)
+}
 
 // --- Caching layer to avoid re-reading files that haven't changed ---
 
