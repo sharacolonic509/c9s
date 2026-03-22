@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>c9s - Terminal Dashboard for Claude Code</title>
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --surface: #1b1b2f;
+            --text: #e0e0e0;
+            --dim: #8888aa;
+            --accent: #bb86fc;
+            --green: #66bb6a;
+            --border: #333355;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--dim);
+            margin-bottom: 40px;
+        }
+        .screenshot {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+        .install {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 40px;
+        }
+        .install code {
+            display: block;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.95rem;
+            color: var(--green);
+            margin: 8px 0 4px;
+        }
+        .install .label {
+            font-size: 0.8rem;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .install .divider {
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+        .features {
+            margin-bottom: 40px;
+        }
+        .features h2 {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        .features li {
+            padding: 6px 0;
+            color: var(--dim);
+        }
+        .features li::before {
+            content: ">";
+            color: var(--accent);
+            margin-right: 10px;
+            font-family: monospace;
+        }
+        .features li strong {
+            color: var(--text);
+        }
+        .how {
+            margin-bottom: 40px;
+        }
+        .how h2 {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+        .how p {
+            color: var(--dim);
+            margin-bottom: 8px;
+        }
+        .how code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            background: var(--surface);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .links {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .beta {
+            font-size: 0.8rem;
+            color: var(--dim);
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>c9s</h1>
+        <p class="tagline">Terminal dashboard for Claude Code. Like k9s, but for your AI sessions.</p>
+
+        <img src="dashboard.png" alt="c9s dashboard" class="screenshot">
+
+        <div class="install">
+            <span class="label">Homebrew</span>
+            <code>brew install stefanoguerrini/tap/c9s</code>
+            <div class="divider"></div>
+            <span class="label">Go</span>
+            <code>go install github.com/stefanoguerrini/c9s@latest</code>
+            <div class="divider"></div>
+            <span class="label">Then</span>
+            <code>c9s</code>
+        </div>
+
+        <div class="features">
+            <h2>What it does</h2>
+            <ul>
+                <li><strong>Zero setup</strong> -- reads directly from ~/.claude/</li>
+                <li><strong>All sessions in one view</strong> -- across every project</li>
+                <li><strong>Live status</strong> -- processing, waiting, done</li>
+                <li><strong>tmux integration</strong> -- open, resume, switch sessions</li>
+                <li><strong>Token tracking</strong> -- see usage per session</li>
+                <li><strong>Keep alive</strong> -- sessions survive when you quit</li>
+                <li><strong>Git worktrees</strong> -- see and switch between worktrees</li>
+                <li><strong>Fully configurable</strong> -- colors, keys, refresh rate</li>
+            </ul>
+        </div>
+
+        <div class="how">
+            <h2>How it works</h2>
+            <p>c9s reads Claude Code's local files (<code>~/.claude/</code>) to discover all your sessions. No API calls, no network, no daemon.</p>
+            <p>Each session runs in its own tmux window. Navigate with <code>j/k</code>, open with <code>Enter</code>, create with <code>n</code>. That's it.</p>
+        </div>
+
+        <div class="links">
+            <a href="https://github.com/StefanoGuerrini/c9s">GitHub</a>
+            <a href="https://github.com/StefanoGuerrini/c9s/issues">Feedback</a>
+            <a href="https://github.com/StefanoGuerrini/c9s/blob/main/LICENSE">MIT License</a>
+        </div>
+
+        <p class="beta">Beta -- c9s is in early development. It reads local files only -- never accesses your Claude account, never stores credentials. Requires macOS or Linux + tmux.</p>
+    </div>
+</body>
+</html>
