@@ -16,6 +16,7 @@ type Config struct {
 	RefreshSeconds int    `json:"refresh_seconds"`  // dashboard refresh interval (default: 3)
 	ScrollSpeed    int    `json:"scroll_speed"`     // lines per mouse scroll event (default: 3)
 	WorkDir        string `json:"work_dir"`         // default working directory for new sessions (empty = cwd)
+	KeepAlive      string `json:"keep_alive"`       // "off" (default) or "on" — keep sessions running on quit
 	Worktrees      string `json:"worktrees"`        // "off" (default), "auto", "always"
 	WorktreeExpand string `json:"worktree_expand"`  // "all" (default), "selected"
 	Keys           Keys   `json:"keys"`
@@ -82,6 +83,7 @@ func Default() Config {
 		Theme:          "default",
 		RefreshSeconds: 3,
 		ScrollSpeed:    3,
+		KeepAlive:      "off",
 		Worktrees:      "off",
 		WorktreeExpand: "all",
 		Keys: Keys{
@@ -168,6 +170,15 @@ func EditableFields() []Field {
 			Desc: "Default directory for new sessions (empty = current directory)",
 			Get:  func(c Config) string { return c.WorkDir },
 			Set:  func(c *Config, v string) { c.WorkDir = v }},
+		{Section: "General", Label: "Keep alive", Key: "keep_alive",
+			Desc:    "on: sessions keep running when you quit c9s, off: quit kills all sessions",
+			Options: []string{"off", "on"},
+			Get:     func(c Config) string { return c.KeepAlive },
+			Set: func(c *Config, v string) {
+				if v == "off" || v == "on" {
+					c.KeepAlive = v
+				}
+			}},
 		// Worktrees (beta)
 		{Section: "Worktrees (beta)", Label: "Mode", Key: "worktrees",
 			Desc:    "off: disabled, auto: show if worktrees exist, always: always show",

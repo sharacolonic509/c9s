@@ -64,10 +64,19 @@ func Bootstrap(selfBin string, args []string, keys NavKeys, colors StatusColors,
 	return Attach()
 }
 
-// Attach attaches the current terminal to the c9s tmux session.
+// CreateDashboardWindow creates a new dashboard window in the existing c9s
+// tmux session. Used when re-attaching after keep_alive detach.
+func CreateDashboardWindow(selfBin string, args []string) error {
+	cmdArgs := append([]string{selfBin, "--inside-tmux"}, args...)
+	cmd := strings.Join(cmdArgs, " ")
+	return exec.Command("tmux", "new-window", "-t", SessionName, "-n", DashboardWindow, cmd).Run()
+}
+
+// Attach attaches the current terminal to the c9s tmux session,
+// targeting the dashboard window so it always opens on the dashboard.
 func Attach() error {
 	tmuxBin, _ := exec.LookPath("tmux")
-	return execSyscall(tmuxBin, []string{"tmux", "attach-session", "-t", SessionName})
+	return execSyscall(tmuxBin, []string{"tmux", "attach-session", "-t", SessionName + ":" + DashboardWindow})
 }
 
 // NewWindow creates a new tmux window in the c9s session with the given
@@ -417,6 +426,12 @@ func CleanupNavigationKeys(keys NavKeys) error {
 	exec.Command("tmux", "unbind-key", "-n", keys.NextSession).Run()
 	exec.Command("tmux", "unbind-key", "-n", keys.PrevSession).Run()
 	return nil
+}
+
+// Detach detaches the current client from the c9s tmux session.
+// The session and all windows keep running in the background.
+func Detach() error {
+	return exec.Command("tmux", "detach-client", "-s", SessionName).Run()
 }
 
 // KillSession kills the entire c9s tmux session.

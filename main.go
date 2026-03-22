@@ -335,6 +335,12 @@ func (m model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "q", "ctrl+c":
 		if m.insideTmux {
+			if cfg.KeepAlive == "on" {
+				// Just detach — dashboard and all sessions keep running.
+				// Re-running c9s will re-attach to the existing session.
+				tmux.Detach()
+				return m, nil // don't quit, keep dashboard alive
+			}
 			tmux.CleanupNavigationKeys(navKeys())
 			// Kill the entire tmux session so we don't fall through
 			// to a claude window after the dashboard exits.
@@ -1941,7 +1947,13 @@ func main() {
 			os.Exit(1)
 		}
 		if tmux.SessionExists() {
-			// Session already exists, just attach.
+			// Session already exists. Re-create dashboard window if it was
+			// closed (e.g., after keep_alive detach killed the bubbletea process).
+			if !tmux.WindowExists(tmux.SessionName + ":" + tmux.DashboardWindow) {
+				tmux.CreateDashboardWindow(selfBin, args)
+				tmux.ConfigureStatusBar(navKeys(), statusColors(), version, cfg.ScrollSpeed)
+				tmux.SetupNavigationKeys(navKeys())
+			}
 			if err := tmux.Attach(); err != nil {
 				fmt.Fprintf(os.Stderr, "tmux attach: %v\n", err)
 				os.Exit(1)
