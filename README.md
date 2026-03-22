@@ -189,6 +189,17 @@ Process detection uses `ps` + `lsof` to find running Claude processes and match 
 - [tmux](https://github.com/tmux/tmux) -- installed automatically when using Homebrew, otherwise `brew install tmux` or `apt install tmux`
 - Go 1.24+ (only needed to build from source)
 
+## Known limitations
+
+**Flickering in large sessions** -- Claude Code generates thousands of scroll events per second when streaming output, which can cause visible flickering in tmux. This is a [known Claude Code + tmux issue](https://github.com/anthropics/claude-code/issues/9935), not specific to c9s.
+
+c9s applies performance optimizations automatically (`escape-time 0`, `monitor-activity off`, increased scrollback buffer). When tmux 3.7 is released with synchronized output (DEC mode 2026), c9s will auto-enable it — this eliminates flickering entirely.
+
+**Workarounds for tmux 3.6:**
+- [claude-chill](https://github.com/davidbeesley/claude-chill) -- a PTY proxy that wraps Claude's output in synchronized frames
+- [Ghostty](https://ghostty.org/) -- terminal with native synchronized output support
+- Build tmux from [git master](https://github.com/tmux/tmux) for early mode 2026 support
+
 ## Related projects
 
 - [agent-deck](https://github.com/asheshgoplani/agent-deck) -- a more feature-rich multi-agent dashboard

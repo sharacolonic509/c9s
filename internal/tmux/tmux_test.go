@@ -135,6 +135,31 @@ func TestClassifyPrompt(t *testing.T) {
 	}
 }
 
+func TestParseTmuxVersionSupportsSync(t *testing.T) {
+	tests := []struct {
+		version string
+		want    bool
+	}{
+		{"tmux 3.6a", false},
+		{"tmux 3.6", false},
+		{"tmux 3.7", true},
+		{"tmux 3.7a", true},
+		{"tmux 4.0", true},
+		{"tmux next-3.7", true},
+		{"tmux 3.5", false},
+		{"tmux 2.9a", false},
+		{"", false},
+		{"not-tmux", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.version, func(t *testing.T) {
+			if got := parseTmuxVersionSupportsSync(tt.version); got != tt.want {
+				t.Errorf("parseTmuxVersionSupportsSync(%q) = %v, want %v", tt.version, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestIsBoxLine(t *testing.T) {
 	tests := []struct {
 		input string

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -313,6 +314,37 @@ func keyDisplayName(tmuxKey string) string {
 	return tmuxKey
 }
 
+// SupportsSyncOutput returns true if tmux supports DEC mode 2026 (synchronized output).
+// Available in tmux >= 3.7 / git master builds after Dec 2025.
+func SupportsSyncOutput() bool {
+	out, err := exec.Command("tmux", "-V").Output()
+	if err != nil {
+		return false
+	}
+	return parseTmuxVersionSupportsSync(strings.TrimSpace(string(out)))
+}
+
+// parseTmuxVersionSupportsSync checks if a tmux version string indicates mode 2026 support.
+func parseTmuxVersionSupportsSync(version string) bool {
+	// Format: "tmux 3.6a", "tmux 3.7", "tmux next-3.7", etc.
+	version = strings.TrimPrefix(version, "tmux ")
+	if strings.Contains(version, "next") {
+		return true // dev/master builds
+	}
+	// Strip letter suffix (e.g., "3.6a" → "3.6").
+	ver := strings.TrimRight(version, "abcdefghijklmnopqrstuvwxyz")
+	parts := strings.SplitN(ver, ".", 2)
+	if len(parts) != 2 {
+		return false
+	}
+	major, err1 := strconv.Atoi(parts[0])
+	minor, err2 := strconv.Atoi(parts[1])
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return major > 3 || (major == 3 && minor >= 7)
+}
+
 // ConfigureStatusBar customizes the tmux status bar and prefix for the c9s session.
 // scrollSpeed controls lines per mouse wheel event (0 or negative = tmux default).
 func ConfigureStatusBar(keys NavKeys, colors StatusColors, version string, scrollSpeed int) {
@@ -355,6 +387,19 @@ func ConfigureStatusBar(keys NavKeys, colors StatusColors, version string, scrol
 	// Allow applications to request extended key mode via CSI u sequences.
 	t("allow-passthrough", "on")
 
+	// Performance: reduce input lag and avoid unnecessary redraws.
+	t("escape-time", "0")
+	t("focus-events", "on")
+	t("default-terminal", "tmux-256color")
+	t("history-limit", "250000")
+
+	// Enable synchronized output (DEC mode 2026) if tmux supports it.
+	// This eliminates flickering when Claude Code sends sync sequences.
+	if SupportsSyncOutput() {
+		exec.Command("tmux", "set-option", "-t", SessionName,
+			"-a", "terminal-features", "xterm*:sync").Run()
+	}
+
 	// Use status-format to take full control — no default window list.
 	t("status-style", fmt.Sprintf("bg=%s,fg=%s", colors.Bg, colors.Fg))
 	t("status-position", "bottom")
@@ -364,6 +409,7 @@ func ConfigureStatusBar(keys NavKeys, colors StatusColors, version string, scrol
 	}
 	w("automatic-rename", "off")
 	w("allow-rename", "off")
+	w("monitor-activity", "off")
 
 	nextPrev := keyDisplayName(keys.NextSession) + "/" + keyDisplayName(keys.PrevSession)[len("ctrl+"):]
 	dash := keyDisplayName(keys.Dashboard)
