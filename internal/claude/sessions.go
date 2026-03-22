@@ -37,7 +37,7 @@ var cache struct {
 
 	// Process list cache (short TTL, just avoid calling lsof too often)
 	procsTime time.Time
-	procs     []claudeProcess
+	procs     []ClaudeProcess
 }
 
 type cachedTokens struct {
@@ -224,15 +224,15 @@ func listAllSessionsFrom(historyPath string) ([]SessionInfo, error) {
 	}
 
 	// Detect running claude processes for idle detection.
-	procs := listClaudeProcesses()
+	procs := ListClaudeProcesses()
 	procBySessionID := make(map[string]bool)
 	procByProject := make(map[string]bool)
 	for _, p := range procs {
-		if p.sessionID != "" {
-			procBySessionID[p.sessionID] = true
+		if p.SessionID != "" {
+			procBySessionID[p.SessionID] = true
 		}
-		if p.projectPath != "" {
-			procByProject[p.projectPath] = true
+		if p.ProjectPath != "" {
+			procByProject[p.ProjectPath] = true
 		}
 	}
 
@@ -583,17 +583,17 @@ func decodeProjectDirName(name string) string {
 	return "/" + strings.ReplaceAll(strings.TrimPrefix(name, "-"), "-", "/")
 }
 
-// claudeProcess represents a running claude CLI process.
-type claudeProcess struct {
-	pid         int
-	sessionID   string // from --resume flag, if present
-	projectPath string // cwd of the process
+// ClaudeProcess represents a running claude CLI process.
+type ClaudeProcess struct {
+	PID         int
+	SessionID   string // from --resume flag, if present
+	ProjectPath string // cwd of the process
 }
 
-// listClaudeProcesses finds running `claude` CLI processes and extracts
+// ListClaudeProcesses finds running `claude` CLI processes and extracts
 // session IDs (from --resume) and working directories (from lsof).
 // Results are cached for 5 seconds.
-func listClaudeProcesses() []claudeProcess {
+func ListClaudeProcesses() []ClaudeProcess {
 	cache.mu.Lock()
 	if time.Since(cache.procsTime) < 5*time.Second && cache.procs != nil {
 		result := cache.procs
@@ -634,16 +634,16 @@ func listClaudeProcesses() []claudeProcess {
 		procs = append(procs, procInfo{pid: pid, args: args})
 	}
 
-	result := make([]claudeProcess, 0, len(procs))
+	result := make([]ClaudeProcess, 0, len(procs))
 	for _, p := range procs {
-		cp := claudeProcess{pid: p.pid}
+		cp := ClaudeProcess{PID: p.pid}
 
 		// Extract --resume session ID if present.
 		if idx := strings.Index(p.args, "--resume "); idx >= 0 {
 			rest := p.args[idx+len("--resume "):]
 			fields := strings.Fields(rest)
 			if len(fields) > 0 {
-				cp.sessionID = fields[0]
+				cp.SessionID = fields[0]
 			}
 		}
 
@@ -654,7 +654,7 @@ func listClaudeProcesses() []claudeProcess {
 	if len(result) > 0 {
 		var pids []string
 		for _, cp := range result {
-			pids = append(pids, fmt.Sprintf("%d", cp.pid))
+			pids = append(pids, fmt.Sprintf("%d", cp.PID))
 		}
 		pidArg := strings.Join(pids, ",")
 		if cwdOut, err := exec.Command("lsof", "-d", "cwd", "-p", pidArg, "-Fn").Output(); err == nil {
@@ -669,8 +669,8 @@ func listClaudeProcesses() []claudeProcess {
 				}
 			}
 			for i := range result {
-				if cwd, ok := cwdByPID[result[i].pid]; ok {
-					result[i].projectPath = cwd
+				if cwd, ok := cwdByPID[result[i].PID]; ok {
+					result[i].ProjectPath = cwd
 				}
 			}
 		}
@@ -682,6 +682,23 @@ func listClaudeProcesses() []claudeProcess {
 	cache.mu.Unlock()
 
 	return result
+}
+
+// ChildPIDs returns the PIDs of direct child processes of the given PID.
+func ChildPIDs(parentPID int) []int {
+	out, err := exec.Command("pgrep", "-P", fmt.Sprintf("%d", parentPID)).Output()
+	if err != nil {
+		return nil
+	}
+	var pids []int
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		pid := 0
+		fmt.Sscanf(line, "%d", &pid)
+		if pid > 0 {
+			pids = append(pids, pid)
+		}
+	}
+	return pids
 }
 
 // --- Internal types matching Claude's sessions-index.json ---

@@ -178,6 +178,20 @@ func WindowExists(windowID string) bool {
 	return exec.Command("tmux", "list-panes", "-t", windowID).Run() == nil
 }
 
+// GetPanePID returns the PID of the shell process in the given tmux window's pane.
+func GetPanePID(windowID string) (int, error) {
+	out, err := exec.Command("tmux", "display-message", "-t", windowID, "-p", "#{pane_pid}").Output()
+	if err != nil {
+		return 0, err
+	}
+	pid := 0
+	fmt.Sscanf(strings.TrimSpace(string(out)), "%d", &pid)
+	if pid == 0 {
+		return 0, fmt.Errorf("no pane pid for window %s", windowID)
+	}
+	return pid, nil
+}
+
 // CapturePaneTail captures the last N lines of the pane in the given window.
 func CapturePaneTail(windowID string, lines int) (string, error) {
 	out, err := exec.Command("tmux", "capture-pane",

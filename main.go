@@ -233,6 +233,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+		// Reconcile managed windows with actual running sessions.
+		// Handles new sessions (tmpKey) and forked sessions (stale sessionID).
+		if m.insideTmux && len(m.managedWindows) > 0 {
+			procs := claude.ListClaudeProcesses()
+			m.reconcileWindows(m.sessions, procs, tmux.GetPanePID, claude.ChildPIDs)
+		}
+
 		// Update pane statuses for managed windows.
 		for key, mw := range m.managedWindows {
 			if !tmux.WindowExists(mw.windowID) {
@@ -595,6 +602,136 @@ func (m *model) getWorktrees(dir string) []git.Worktree {
 	wts := git.ListWorktrees(dir)
 	m.worktreeCache[dir] = wts
 	return wts
+}
+
+// reconcileWindows matches managed windows to the claude sessions actually
+// running inside them. This handles two cases:
+// 1. New sessions (n key): tracked with tmpKey, sessionID empty
+// 2. Forked sessions (/fork): old sessionID in map, new session running in window
+//
+// For forks, the claude process keeps the old --resume arg, so we can't trust
+// process args alone. When the tracked session's JSONL is stale, we look for
+// the most recently active session in the same project directory.
+func (m *model) reconcileWindows(
+	sessions []claude.SessionInfo,
+	procs []claude.ClaudeProcess,
+	getPanePID func(string) (int, error),
+	getChildPIDs func(int) []int,
+) {
+	// Build PID → process lookup.
+	pidToProc := make(map[int]claude.ClaudeProcess)
+	for _, p := range procs {
+		pidToProc[p.PID] = p
+	}
+
+	// Build sessionID → session lookup for mtime checks.
+	sessionByID := make(map[string]*claude.SessionInfo)
+	for i := range sessions {
+		sessionByID[sessions[i].SessionID] = &sessions[i]
+	}
+
+	toDelete := []string{}
+	toAdd := map[string]managedWindow{}
+
+	for key, mw := range m.managedWindows {
+		// Determine if the current session is stale (JSONL not written recently).
+		currentStale := true
+		if mw.sessionID != "" {
+			if s, ok := sessionByID[mw.sessionID]; ok {
+				if !s.FileMtime.IsZero() && time.Since(s.FileMtime) < 30*time.Second {
+					currentStale = false
+				}
+			}
+		}
+
+		// If current session is active and healthy, skip reconciliation.
+		if !currentStale {
+			continue
+		}
+
+		// Get the pane PID for this tmux window.
+		panePID, err := getPanePID(mw.windowID)
+		if err != nil {
+			continue
+		}
+
+		// Find claude process children of the pane shell.
+		childPIDs := getChildPIDs(panePID)
+
+		var matchedSessionID string
+		var matchedProject string
+		for _, cpid := range childPIDs {
+			if proc, ok := pidToProc[cpid]; ok {
+				matchedProject = proc.ProjectPath
+				// Only trust --resume if the session it points to is active.
+				// After a fork, the process still has --resume old-id but
+				// the old session's JSONL is stale.
+				if proc.SessionID != "" && proc.SessionID != mw.sessionID {
+					if s, ok := sessionByID[proc.SessionID]; ok {
+						if !s.FileMtime.IsZero() && time.Since(s.FileMtime) < 30*time.Second {
+							matchedSessionID = proc.SessionID
+							break
+						}
+					}
+				}
+				break
+			}
+		}
+
+		// Fallback: find the most recently active session in the same project.
+		// This handles forks (new session in same project, same process).
+		if matchedSessionID == "" {
+			project := matchedProject
+			if project == "" {
+				project = mw.project
+			}
+			if project != "" {
+				var bestID string
+				var bestMtime time.Time
+				for _, s := range sessions {
+					if s.ProjectPath == project &&
+						s.SessionID != mw.sessionID &&
+						!s.FileMtime.IsZero() &&
+						time.Since(s.FileMtime) < 30*time.Second &&
+						s.FileMtime.After(bestMtime) {
+						bestID = s.SessionID
+						bestMtime = s.FileMtime
+					}
+				}
+				matchedSessionID = bestID
+			}
+		}
+
+		if matchedSessionID == "" || matchedSessionID == key {
+			continue
+		}
+
+		// Re-key: remove old entry, add under new sessionID.
+		toDelete = append(toDelete, key)
+		newMW := managedWindow{
+			windowID:   mw.windowID,
+			sessionID:  matchedSessionID,
+			project:    mw.project,
+			paneStatus: mw.paneStatus,
+		}
+		toAdd[matchedSessionID] = newMW
+
+		// Rename the tmux window to reflect the new session.
+		if s, ok := sessionByID[matchedSessionID]; ok {
+			name := s.DisplayName()
+			if len(name) > 30 {
+				name = name[:30]
+			}
+			tmux.RenameWindow(mw.windowID, name)
+		}
+	}
+
+	for _, k := range toDelete {
+		delete(m.managedWindows, k)
+	}
+	for k, v := range toAdd {
+		m.managedWindows[k] = v
+	}
 }
 
 // saveDashboardState persists toggle states to config so they survive restarts.
