@@ -22,7 +22,7 @@
             line-height: 1.6;
         }
         .container {
-            max-width: 720px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 60px 24px;
         }
@@ -37,11 +37,26 @@
             color: var(--dim);
             margin-bottom: 40px;
         }
+        .screenshot-wrap {
+            margin: 0 -80px 40px;
+        }
         .screenshot {
             width: 100%;
             border-radius: 8px;
             border: 1px solid var(--border);
-            margin-bottom: 40px;
+            display: block;
+        }
+        @media (max-width: 900px) {
+            .screenshot-wrap {
+                margin: 0 0 40px;
+            }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 32px 16px; }
+            h1 { font-size: 2rem; }
+            .tagline { font-size: 1rem; margin-bottom: 24px; }
+            .install { padding: 16px; }
+            .links { flex-wrap: wrap; gap: 16px; }
         }
         .install {
             background: var(--surface);
@@ -137,7 +152,9 @@
         <h1>c9s</h1>
         <p class="tagline">Terminal dashboard for Claude Code. Like k9s, but for your AI sessions.</p>
 
-        <img src="dashboard.png" alt="c9s dashboard" class="screenshot">
+        <div class="screenshot-wrap">
+            <img src="dashboard.png" alt="c9s dashboard" class="screenshot">
+        </div>
 
         <div class="install">
             <span class="label">Homebrew</span>
